@@ -1,0 +1,8 @@
+# Put here overrides for binaries packages that can't be fetched from the
+# upstream mirror, e.g. renamed packages or packages from multiverse.
+dolphinos-artwork Section gnome
+dolphinos-desktop Section metapackages
+dolphinos-minimal Section metapackages
+dolphinos-mobile Section universe/metapackages
+dolphinos-mobile-dev Section universe/metapackages
+dolphinos-standard Section metapackages

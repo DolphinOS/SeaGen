@@ -1,0 +1,305 @@
+#/bin/bash
+
+# ----------------------------------------------------------------------------
+#    SeaGen is a set of scripts designed to build DolphinOS.
+#    Copyright (C) 2012  Jimmy M. Coleman <hyperclock@dolphin-os.net>
+#
+#    SeaGen is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    SeaGen is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with SeaGen.  If not, see <http://www.gnu.org/licenses/>.
+# ---------------------------------------------------------------------------
+# ----------------------------Extra Info-------------------------------------     
+#    SeaGen is heavily based on the 'builder' scripts designed and used for
+#    building the gNewSense distribution. There has bin and will be some heavy
+#    hacking going into the scripts. The work that is done here will be under
+#    the General Public License version 3 (GPLv3). The original copyrights 
+#    stay with the copyright holder. See http://gnewsense.org for more info.
+# ----------------------- END Extra Info--------------------------------------    
+
+
+# ================================================================
+# Edit this config file to your needs. Some things should ONLY
+# be canged if xou know what you're doing - these will be marked
+# as DONT CHANGE.
+# ================================================================
+# ---------------
+# ARE YOU ROOT?
+# ---------------
+if [ $UID != 0 ]; then
+	echo 'This script must be run as root'
+	exit 1
+fi
+
+# ----------------------------------------------
+# DEBUG while doing a run.
+# If you want less debugging info to be printed 
+# out , change this line to 'set +ex'
+# ----------------------------------------------
+set -ex
+
+# ====================================================================
+# UPSTREAM MIRRORS - this is where the sources and (prebuilt) binaries
+# come from. These are used to setup and build the repo.
+# ====================================================================
+# --------------------
+# Ubuntu mirror
+# -------------------
+MIRROR=http://archive.ubuntu.com/ubuntu
+MIRRORDIST=precise
+
+# ---------------------
+#  MATE mirror
+# ----------------------
+MATE_MIRROR=http://repo.mate-desktop.org/ubuntu
+MATE_MIRRORDIST=precise
+
+# ---------------------------------------------
+# TRINITY mirror
+# NOTE: Not used at this point in development
+# ---------------------------------------------
+TRINITY_MIRROR=http://ppa.quickbuild.pearsoncomputing.net/trinity/trinity-v3.5.13/ubuntu
+TRINITY_MIRRORDIST=onieric
+
+# -------------------------------
+# TRINITY BUILDDEPS mirror
+# NOTE: Not used at this point in development
+# ---------------------------------------------
+TRINITYBD_MIRROR=http://ppa.quickbuild.pearsoncomputing.net/trinity/trinity-builddeps-v3.5.13/ubuntu
+TRINITYBD_MIRRORDIST=onieric
+
+# ------------------------
+# local Multimrdia mirror
+# ------------------------
+MEDIA_MIRROR=http://packages.medibuntu.org
+MEDIA_MIRRORDIST=precise
+
+# ========================================================================================
+# DISTRO SPECIFIC CONFIGURATION - the majority of your changes should be below this line.
+# ========================================================================================
+# -------------------
+# Set the Distro name
+# -------------------
+DISTRONAME=DolphinOS
+DISTRONAME_L=`echo $DISTRONAME | tr 'A-Z' 'a-z'`
+
+# -----------------------------------
+# Set the codename for our release?
+# ----------------------------------
+BASE_RELEASE=dusky
+[ -z $RELEASE ] && RELEASE=$BASE_RELEASE
+
+# ------------------------
+# Other Settings go below.
+# ------------------------
+TAGLINE=""
+
+# -------------------------------
+# This is the 8 character key ID, 
+# not the full fingerprint
+# -------------------------------
+SIGNINGKEY=5BC27A2A
+
+# -----------------------------------
+# Name and email address for changes. 
+# Syntax is important.
+# -----------------------------------
+export MAINTINFO='Jimmy M Coleman <hyperclock@dolphin-os.net>'
+
+# --------------------------------------------------
+# Disable (0) or Enable (1) backports and updates?
+# --------------------------------------------------
+UPDATES=1
+BACKPORTS=1
+
+# -----------------------------------------------
+# Which architectures we want in our repository 
+# (list all of them)
+# -----------------------------------------------
+ALL_REPO_ARCHES="i386 amd64"
+
+# ==========================================================
+# MID STREAM - this is where things are on the build server
+# ==========================================================
+# -----------------
+# LIVE CD version
+# ----------------
+LIVECD_VERSION=1.0
+
+#=====================
+# ARCHIVE AND MEDIA
+# ====================
+# -------------------------------------------------------------------------------
+# Primary mirror should be repo.$DOMAIN, secondaries are CC.repo.$DOMAIN
+# Security host will be security.$DOMAIN and CC.security.$DOMAIN
+# ------------------------------------------------------------------------------
+DOMAIN=dolphin-os.net
+
+# ---------------------------------------------------------------------
+# Optional bittorrent announce list (btmakemetafile.bittornado --help)
+# NOT YET USED
+# ---------------------------------------------------------------------
+BITTORRENT_ANNOUNCE_LIST=''
+
+# -----------------------------------
+# Where to push the repo and livecds
+# You will need to change web_user
+# to fit yiour records
+# -----------------------------------
+RSYNC_DEST=web_user@repo.$DOMAIN:web/$DISTRONAME_L
+RSYNC_DEST_CD=web_user@cdimage.$DOMAIN:web/$RELEASE
+
+# --------------------------------------------------
+# Extra options for rsyncing up cds, -va is assumed
+# --------------------------------------------------
+RSYNC_OPTIONS="--partial"
+
+# --------
+# ARTWORK
+# --------
+LOGO_LETTER=D
+LOGO_COLOUR=blue	# Don't choose black or yellow
+
+# -----------------------------------------------------------
+# Changes to be made to the ubuntu-minimal etc. and packages
+# -----------------------------------------------------------
+META_minimal_ADD=""
+META_standard_ADD="emacs nethack bsdgames build-essential"
+META_desktop_ADD="dolphin-artwork dolphin-gdm-themes discover chromium-browser read-edid"
+META_desktop_ADD="${META_desktop_ADD} gthumb gnote aspell-en"
+
+META_minimal_REMOVE=""
+META_standard_REMOVE="popularity-contest friendly-recovery"
+META_desktop_REMOVE="ubuntu-docs ubuntu-artwork apport-gtk hwtest-gtk usplash-theme-ubuntu ubuntu-gdm-themes"
+META_desktop_REMOVE="${META_desktop_REMOVE} ubufox app-install-data-commercial"
+META_desktop_REMOVE="${META_desktop_REMOVE} ubuntu-sounds"
+
+# ----------------------------------
+# Packages to install on the live 
+# cd not pulled in by META_* changes
+# ----------------------------------
+LIVECD_EXTRAS="ubiquity xresprobe binutils-static gvfs-fuse gparted jfsutils ntfsprogs xfsprogs vim"
+
+FIREFOX_NAME=WildWilly
+
+# ---------------------------------------
+# Extra packages to add to the source cd
+# leave blank for none
+# ---------------------------------------
+CDSOURCE_ADD="seagen"
+
+# ---------------------------------------
+# Extra packages to install in the chroot
+# ---------------------------------------
+CHROOT_EXTRA_PACKAGES="aptitude cdbs python-dev python-distutils-extra python-central ccache"
+
+# --------------------------------------------------------------------------
+# Set it to 1 if you want to use ccache in the chrooted environment.
+# ccache is turned off by default because it is useful only for development
+# and may increase first compilation time.
+# --------------------------------------------------------------------------
+USECCACHE=0
+
+# ----------------------------------------------------
+# Version numbers to be appended to generated .debs 
+# Mostly used during development (Increment these 
+# versions when making a change to the package)
+# ----------------------------------------------------
+DOLPHIN_KEYRING_VERSION=2
+APT_VERSION=4
+UBIQUITY_VERSION=5
+BASE_FILES_VERSION=3
+UPDATE_MANAGER_VERSION=2
+ARTWORK_VERSION=2
+META_VERSION=2
+SEAGEN_VERSION=1
+KMETA_VERSION=1
+FIREFOX_VERSION=1
+EPIPHANY_BROWSER_VERSION=1
+PYTHON_APT_VERSION=1
+THUNDERBIRD_VERSION=1
+
+# =======
+# PATHS
+# =======
+BASEDIR=/srv/$DISTRONAME_L
+WORKINGDIR=$BASEDIR/tmp
+LIVECDDIR=$BASEDIR/livecd
+REPODST=$BASEDIR/$DISTRONAME_L
+REPOAPT=http://192.168.1.105/$DISTRONAME_L
+
+# ----------------------------------------------------------------
+# Space separated list of repo components. Put the default first.
+# Not sure if usefull.
+# ----------------------------------------------------------------
+COMPONENTS="main universe multiverse restricted"
+
+# ======================
+# Extra Customisations
+#=======================
+# -----------------------------------------------------------------
+# What arch are we building? Defaults to i386 is nothing specified
+# via the calling environment. Currently, valid strings are "amd64"
+# and "i386".
+# -----------------------------------------------------------------
+if [ -z $BUILDARCH ]; then
+	BUILDARCH="amd64"
+fi
+
+# --------------------------------------------------------
+# Change "precise" to the distroname your are baing from
+# then fix the kernel release to your needs.
+# --------------------------------------------------------
+case $(tr A-Z a-z <<<$MIRRORDIST) in
+	"precise")
+		export KERNEL_RELEASE="3.2.0"
+		;;
+	*)
+		exit 1
+		;;
+esac
+
+# ==================DONT EDIT ==================
+# -----------------------------------------------
+# This sets variables for different sections of 
+# builder to use based on the $BUILDARCH variable
+# from above. Using case to be a little forgiving
+# about input.
+# ------------------------------------------------
+case $BUILDARCH in
+	386 | i386 | I386 | ia32 | IA32)
+		export GNS_HOST_ARCH="i386";
+		export KERNELARCH="386";
+		export DPKGOPTS='-rfakeroot -e"$MAINTINFO" -m"$MAINTINFO" -us -uc -ai386';
+	;;
+	amd64 | AMD64)
+		export GNS_HOST_ARCH="amd64";
+		export KERNELARCH="amd64";
+		export DPKGOPTS='-rfakeroot -e"$MAINTINFO" -m"$MAINTINFO" -us -uc -B -aamd64';
+	;;
+	*)
+	echo -e "\n\nERROR\! invalid arch\!\n\n"
+	exit 1
+	;;
+esac
+
+# ------------------------------------
+# Which extras (aka variant) to build
+# ------------------------------------
+if [ 1 == $UPDATES ]; then EXTRAS="-updates"; fi
+if [ 1 == $BACKPORTS ]; then EXTRAS="$EXTRAS -backports"; fi
+
+# ---------------------------------------------------------
+# Without this, the diff cleaning for gen-linux will break. 
+# Probably affects other stuff too.
+# ---------------------------------------------------------
+LANG=C
+
